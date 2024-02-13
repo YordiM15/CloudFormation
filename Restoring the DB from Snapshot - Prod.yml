@@ -1,0 +1,54 @@
+Parameters:
+  DBInstanceClass:
+    Type: String
+    Default: db.r5.2xlarge
+    AllowedValues:
+      - db.t3.small
+      - db.t3.medium
+      - db.r5.large
+      - db.r5.xlarge
+      - db.r5.2xlarge
+      - db.r5.4xlarge
+    Description: The instance class of the database
+  DBSnapshotIdentifier: 
+    Description: Specify the ARN of the Snapshot from where you want to restore the DB
+    Type: String
+  EngineVersion:
+    Type: String
+    Default: 5.7.mysql_aurora.2.11.2
+    Description: The version of the database
+  VpcSecurityGroupIds:
+    Type: String
+    Description: Specifying the DB Security group
+    Default: sg-a079c6dd
+
+Resources:
+  MyDBCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      SnapshotIdentifier: !Ref DBSnapshotIdentifier
+      Engine: aurora-mysql
+      EngineVersion: !Ref EngineVersion
+      DBClusterParameterGroupName: 'anya-cluster-parameter-group'
+      Port: 50001
+      DBSubnetGroupName: 'alegra-production-db'
+      VpcSecurityGroupIds: 
+      - !Ref VpcSecurityGroupIds
+      EnableCloudwatchLogsExports:
+        - error
+        - general 
+      Tags:
+        - Key: Name
+          Value: AuroraDBCluster
+
+  MyDBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBClusterIdentifier: !Ref MyDBCluster
+      DBInstanceClass: !Ref DBInstanceClass
+      DBParameterGroupName: 'anya-db-parameter-group'
+      Engine: aurora-mysql
+      PubliclyAccessible: false
+      Tags:
+        - Key: Name
+          Value: AuroraDBInstance
